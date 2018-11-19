@@ -15,6 +15,7 @@ let sequelize = new Sequelize('School', 'root', '', {
     }
 });
 
+//test
 export let Categories: Class<
     Model<{ id?: number, type: string}>
     > = sequelize.define('Categories', {
