@@ -1,184 +1,541 @@
 // @flow
 
+function square(n: number): number {
+    return n * n;
+}
+
+square('2'); // Error! Flow not working??? HUH?????
+
 import ReactDOM from 'react-dom';
 import * as React from 'react';
 import { Component } from 'react-simplified';
 import { HashRouter, Route, NavLink } from 'react-router-dom';
+import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { Alert } from './widgets';
-import { studentService } from './services';
+import { articleService, studentService } from './services';
+
+//import { Register } from './components/register'
 
 // Reload application when not in production environment
 if (process.env.NODE_ENV !== 'production') {
-  let script = document.createElement('script');
-  script.src = '/reload/reload.js';
-  if (document.body) document.body.appendChild(script);
+    let script = document.createElement('script');
+    script.src = '/reload/reload.js';
+    if (document.body) document.body.appendChild(script);
 }
 
 import createHashHistory from 'history/createHashHistory';
-const history = createHashHistory(); // Use history.push(...) to programmatically change path, for instance after successfully saving a student
+const history = createHashHistory();
 
-class Menu extends Component {
-  render() {
-    return (
-      <table>
-        <tbody>
-          <tr>
-            <td>
-              <NavLink activeStyle={{ color: 'darkblue' }} exact to="/">
-                React example
-              </NavLink>
-            </td>
-            <td>
-              <NavLink activeStyle={{ color: 'darkblue' }} to="/students">
-                Students
-              </NavLink>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    );
-  }
+//dateformat rounds of to minute
+function getDate(date){
+    var dateObject = new Date(date);
+    dateObject.setSeconds(0,0);
+    return(dateObject.toISOString().replace('T', ' ').replace(':00.000Z', ''));
 }
 
 class Home extends Component {
-  render() {
-    return <div>React example with component state</div>;
-  }
+    render() {
+        return (
+            <div id='home'>
+              <Alert />
+              <Feed />
+              <MainContent />
+            </div>
+        );
+    }
 }
 
-class StudentList extends Component {
-  students = [];
+class Navbar extends Component {
+    render() {
+        return(
+            <nav id='navbar' className='navbar navbar-dark bg-dark'>
+              <a id='navbar-title' className='navbar-brand' onClick={() => this.toHome()} >RealFakeNews</a>
+              <form className='form-inline'>
+                <NavLink to='/register'>
+                  <button className='btn btn-outline-success' type='button'>Register article</button>
+                </NavLink>
+              </form>
+            </nav>
+        );
+    }
 
-  render() {
-    return (
-      <ul>
-        {this.students.map(student => (
-          <li key={student.email}>
-            <NavLink activeStyle={{ color: 'darkblue' }} exact to={'/students/' + student.id}>
-              {student.firstName} {student.lastName}
-            </NavLink>{' '}
-            <NavLink activeStyle={{ color: 'darkblue' }} to={'/students/' + student.id + '/edit'}>
-              edit
-            </NavLink>
-          </li>
-        ))}
-      </ul>
-    );
-  }
-
-  mounted() {
-    studentService
-      .getStudents()
-      .then(students => (this.students = students))
-      .catch((error: Error) => Alert.danger(error.message));
-  }
+    toHome(){
+        history.push('/');
+        window.location.reload();
+    }
 }
 
-class StudentDetails extends Component<{ match: { params: { id: number } } }> {
-  student = null;
+class Feed extends Component {
+    articles = [];
 
-  render() {
-    if (!this.student) return null;
+    render() {
+        return(
+            <div id='feed'>
+                {this.articles.map(article =>
+                    <NavLink key={article.id} to={'/article/' + article.id}>
+                      <div className='feed-item'>{article.title + ' (' + getDate(article.createdAt) + ')'}</div>
+                    </NavLink>
+                )}
+            </div>
+        );
+    }
 
-    return (
-      <div>
-        <ul>
-          <li>First name: {this.student.firstName}</li>
-          <li>Last name: {this.student.lastName}</li>
-          <li>Email: {this.student.email}</li>
-        </ul>
-      </div>
-    );
-  }
+    mounted(){
+        articleService.getArticles()
+            .then(articles => (this.articles = articles, this.runCarousel()))
+            .catch((error: Error) => console.log(error.message));
+    }
 
-  mounted() {
-    studentService
-      .getStudent(this.props.match.params.id)
-      .then(student => (this.student = student))
-      .catch((error: Error) => Alert.danger(error.message));
-  }
+    runCarousel(){
+        $(document).ready(function() {
+            $('#feed').slick({
+                slidesToShow: 2,
+                slidesToScroll: 1,
+                autoplay: true,
+                speed: 2000,
+                autoplaySpeed: 2000,
+                arrows: false,
+                pauseOnHover: true
+            });
+        });
+    }
 }
 
-class StudentEdit extends Component<{ match: { params: { id: number } } }> {
-  student = null;
 
-  render() {
-    if (!this.student) return null;
+class MainContent extends Component {
+    articles = [];
+    categories = [];
+    showing = [];
+    filterOpen = false;
 
-    return (
-      <form>
-        <ul>
-          <li>
-            First name:{' '}
-            <input
-              type="text"
-              value={this.student.firstName}
-              onChange={(event: SyntheticInputEvent<HTMLInputElement>) => {
-                if (this.student) this.student.firstName = event.target.value;
-              }}
-            />
-          </li>
-          <li>
-            Last name:{' '}
-            <input
-              type="text"
-              value={this.student.lastName}
-              onChange={(event: SyntheticInputEvent<HTMLInputElement>) => {
-                if (this.student) this.student.lastName = event.target.value;
-              }}
-            />
-          </li>
-          <li>
-            Email:{' '}
-            <input
-              type="text"
-              value={this.student.email}
-              onChange={(event: SyntheticInputEvent<HTMLInputElement>) => {
-                if (this.student) this.student.email = event.target.value;
-              }}
-            />
-          </li>
-        </ul>
-        <button type="button" onClick={this.save}>
-          Save
-        </button>
-      </form>
-    );
-  }
+    render() {
+        return(
+            <div id='main-content-wrapper'>
+              <div id="side-filter" className="w3-sidebar w3-bar-block w3-card" style={{display:'none'}}>
 
-  mounted() {
-    studentService
-      .getStudent(this.props.match.params.id)
-      .then(student => (this.student = student))
-      .catch((error: Error) => Alert.danger(error.message));
-  }
+                  {this.categories.map(category => (
+                      <a
+                          key={category.id}
+                          href='#'
+                          className='w3-bar-item w3-button'
+                          onClick={() => this.filter(category.type)}
+                      >
+                          {category.type}
+                      </a>
+                  ))}
+              </div>
+              <div id='main-content'>
+                <div>
+                  <button
+                      id="open-side-filter"
+                      className="w3-button w3-teal w3-xlarge"
+                      onClick={(e) => this.open()}
+                  >
+                    &#9776;
+                  </button>
+                </div>
+                  {this.showing.map(article => (
+                      <Article
+                          key={article.id}
+                          articleId={article.id}
+                          title={article.title}
+                          date={article.createdAt}
+                          picture={article.picture}
+                          category={article.category}
+                      ></Article>
+                  ))}
+              </div>
+            </div>
+        );
+    }
 
-  save() {
-    if (!this.student) return null;
+    open() {
+        let mainContent = $("#main-content");
+        let sideFilter = $('#side-filter');
+        if(this.filterOpen){
+            mainContent.css('margin-left', '0');
+            mainContent.css('padding-right', '10px')
+            sideFilter.css('width', '0%');
+            sideFilter.css('display', 'none');
+            this.filterOpen = false;
+        }else if(!this.filterOpen){
+            mainContent.css('margin-left', '20%');
+            mainContent.css('padding-right', '18%')
+            sideFilter.css('width', '20%');
+            sideFilter.css('display', 'block');
+            this.filterOpen = true;
+        }
+    }
 
-    studentService
-      .updateStudent(this.student)
-      .then(() => {
-        let studentList = StudentList.instance();
-        if (studentList) studentList.mounted(); // Update Studentlist-component
-        if (this.student) history.push('/students/' + this.student.id);
-      })
-      .catch((error: Error) => Alert.danger(error.message));
-  }
+    filter(category){
+        let cap = 50;
+        console.log(category);
+        this.showing = this.articles.filter(article => ((article.category == category) && (cap-- > 0)));
+    }
+
+    mounted(){
+        let cap = 50;
+        articleService.getArticles()
+            .then((articles => (this.articles = articles, this.showing = articles.filter((article) => (cap-- > 0 && article.importance == 1)))),
+                articleService.getCategories()
+                    .then(categories => (this.categories = categories))
+                    .catch((error: Error) => console.log(error.message))
+            )
+            .catch((error: Error) => console.log(error.message));
+    }
 }
+
+class Article extends Component<{articleId: number, title: string, date: Date, picture: String, category: string}> {
+    toggle = this.toggle.bind(this);
+    optionsOpen = false;
+
+    render() {
+        return(
+            <div className='card article'>
+              <img className='card-img-top article-image' src={this.props.picture} alt='Card image'></img>
+              <div className='card-body article-body'>
+                <NavLink to={'/article/' + this.props.articleId}>
+                  <h5 className='card-title article-title'>{this.props.title}</h5>
+                </NavLink>
+                <h6 className='card-text article-category'>{this.props.category}</h6>
+                <h6 className='card-text article-date'>{getDate(this.props.date)}</h6>
+
+                <Dropdown className='article-options' direction="up" isOpen={this.optionsOpen} toggle={this.toggle}>
+                  <DropdownToggle color="info" caret>
+                    options
+                  </DropdownToggle>
+                  <DropdownMenu>
+                    <NavLink to={'/article/' + this.props.articleId + '/edit'}>
+                      <DropdownItem style={{color: 'teal'}}>Edit</DropdownItem>
+                    </NavLink>
+                    <DropdownItem style={{color: 'red'}} onClick={() => this.delete(this.props.articleId)}>Delete</DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+
+              </div>
+            </div>
+        );
+    }
+
+    toggle() {
+        this.optionsOpen ? this.optionsOpen = false : this.optionsOpen = true;
+    }
+
+    delete(id){
+        articleService.deleteArticle(id)
+            .then(window.location.reload())
+            .catch((error: Error) => Alert.danger(error.message));
+    }
+
+}
+
+class ArticleInfo extends Component<{ match: { params: { id: number } } }> {
+    article = null;
+
+    render(){
+        if(!this.article) return null;
+
+        return(
+            <div id='article-info'>
+              <img id='article-info-picture' src={this.article.picture} alt='Article front image' />
+              <div id='article-info-top-wrapper'>
+                <h6 id='article-info-category'> {this.article.category} </h6>
+                <h1 id='article-info-title'>{this.article.title}</h1>
+                <h6> ({getDate(this.article.createdAt)}) </h6>
+              </div>
+              <div id='article-info-content'>
+                <p>{this.article.content}</p>
+              </div>
+            </div>
+        );
+    }
+
+    mounted(){
+        articleService.getArticle(this.props.match.params.id)
+            .then(article => (this.article = article))
+            .catch((error: Error) => console.log(error.message));
+    }
+}
+
+class ArticleEdit extends Component<{ match: { params: { id: number } } }> {
+    article = null;
+    categories = [];
+
+    render(){
+        if(!this.article) return null;
+
+        return(
+            <div id='register'>
+              <Alert />
+              <div id='register-wrapper'>
+                <div id='register-form' className='card'>
+                  <form style={{margin: '10px'}}>
+                    <div style={{textAlign: 'center'}}>
+                      <h5 className='card-title'>Edit article</h5>
+                    </div>
+                    <div className='form-group'>
+                      <label style={{float: 'left'}}>Title</label>
+                      <input
+                          type='text'
+                          className='form-control'
+                          value={this.article.title}
+                          onChange={(event: SyntheticInputEvent<HTMLInputElement>) => (this.article.title = event.target.value.trim())}
+                      ></input>
+                    </div>
+                    <div className='form-group'>
+                      <label style={{float: 'left'}}>Picture URL</label>
+                      <input
+                          type='text'
+                          className='form-control'
+                          value={this.article.picture}
+                          onChange={(event: SyntheticInputEvent<HTMLInputElement>) => (this.article.picture = event.target.value.trim())}
+                      ></input>
+                    </div>
+                    <div className='form-group'>
+                      <label>Text</label>
+                      <textarea
+                          className='form-control'
+                          rows='10'
+                          value={this.article.content}
+                          onChange={(event: SyntheticInputEvent<HTMLInputElement>) => (this.article.content = event.target.value.trim())}
+                      ></textarea>
+                    </div>
+
+                    <label>Category</label>
+                    <select
+                        className='selectpicker browser-default custom-select'
+                        defaultValue={this.article.category}
+                        onChange={(event: SyntheticInputEvent<HTMLInputElement>) => (this.article.category = event.target.value)}
+                    >
+                        {this.categories.map(category => (
+                            <option
+                                key={category.id}
+                                value={category.type}
+                            >
+                                {category.type}
+                            </option>
+                        ))}
+                    </select>
+                    <label style={{marginTop: '20px'}}>Importance</label><br/>
+                    <div className='form-check importance'>
+                      <input className='form-check-input'
+                             type='radio'
+                             name='exampleRadios'
+                             value='1'
+                             checked={(this.article.importance == 1) ? 'checked' : ''}
+                             onChange={(event: SyntheticInputEvent<HTMLInputElement>) =>
+                                 (this.article.importance = Number(event.target.value))}/>
+                      <label className='form-check-label'>
+                        Important
+                      </label>
+                    </div>
+                    <div className='form-check'>
+                      <input className='form-check-input'
+                             type='radio'
+                             name='exampleRadios'
+                             value='2'
+                             checked={(this.article.importance == 2) ? 'checked' : ''}
+                             onChange={(event: SyntheticInputEvent<HTMLInputElement>) =>
+                                 (this.article.importance = Number(event.target.value))}
+                      />
+                      <label className='form-check-label'>
+                        Less Important
+                      </label>
+                    </div>
+                    <button
+                        type='button'
+                        className='btn btn-primary'
+                        style={{marginTop: '20px'}}
+                        onClick={() => this.save()}>Save</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+        );
+    }
+
+    async save(){
+        var valid = true;
+        if (this.article.title == ''){
+            valid = false;
+            Alert.danger('Title required');
+        } else if (this.article.length > 64){
+            valid = false;
+            Alert.danger('Max title characters: 64');
+        }
+        if (this.article.category.trim() == ''){
+            valid = false;
+            Alert.danger('Category required');
+        }
+        if ((this.article.importance != 1) && (this.article.importance != 2)){
+            valid = false;
+            Alert.danger('Importance required');
+        }
+
+        if(valid){
+            if (this.article.picture.trim() == '') this.article.picture = 'https://tinyurl.com/y73nxqn9';
+            articleService.updateArticle(this.article)
+                .then(history.replace('/'), window.location.reload())
+                .catch((error: Error) => Alert.danger(error.message));
+        }
+    }
+
+    mounted(){
+
+        articleService.getCategories()
+            .then((categories => (this.categories = categories)),
+                articleService.getArticle(this.props.match.params.id)
+                    .then((article => (this.article = article)))
+                    .catch((error: Error) => console.log(error.message))
+            )
+            .catch((error: Error) => console.log(error.message));
+
+    }
+}
+
+class Register extends Component {
+    categories = [];
+    title = '';
+    picture = '';
+    content = '';
+    category = '';
+    importance = 0;
+
+    render(){
+        return(
+            <div id='register'>
+              <Alert />
+              <div id='register-wrapper'>
+                <div id='register-form' className='card'>
+                  <form style={{margin: '10px'}}>
+                    <div style={{textAlign: 'center'}}>
+                      <h5 className='card-title'>Register new article</h5>
+                    </div>
+                    <div className='form-group'>
+                      <label style={{float: 'left'}}>Title</label>
+                      <input
+                          type='text'
+                          className='form-control'
+                          value={this.title}
+                          onChange={(event: SyntheticInputEvent<HTMLInputElement>) => (this.title = event.target.value.trim())}
+                      ></input>
+                    </div>
+                    <div className='form-group'>
+                      <label style={{float: 'left'}}>Picture URL</label>
+                      <input
+                          type='text'
+                          className='form-control'
+                          value={this.picture}
+                          onChange={(event: SyntheticInputEvent<HTMLInputElement>) => (this.picture = event.target.value.trim())}
+                      ></input>
+                    </div>
+                    <div className='form-group'>
+                      <label>Text</label>
+                      <textarea
+                          className='form-control'
+                          rows='10'
+                          value={this.content}
+                          onChange={(event: SyntheticInputEvent<HTMLInputElement>) => (this.content = event.target.value.trim())}
+                      ></textarea>
+                    </div>
+                    <label>Category</label>
+                    <select
+                        className='selectpicker browser-default custom-select'
+                        onChange={(event: SyntheticInputEvent<HTMLInputElement>) => (this.category = event.target.value)}
+                        defaultValue=''
+                    ><option disabled value=''> -- select category -- </option>
+                        {this.categories.map(category => (
+                            <option key={category.id} value={category.type}>
+                                {category.type}
+                            </option>
+                        ))}
+                    </select>
+                    <label style={{marginTop: '20px'}}>Importance</label><br/>
+                    <div className='form-check importance'>
+                      <input className='form-check-input'
+                             type='radio'
+                             name='exampleRadios'
+                             value='1'
+                             onChange={(event: SyntheticInputEvent<HTMLInputElement>) =>
+                                 (this.importance = Number(event.target.value))}/>
+                      <label className='form-check-label'>
+                        Important
+                      </label>
+                    </div>
+                    <div className='form-check'>
+                      <input className='form-check-input'
+                             type='radio'
+                             name='exampleRadios'
+                             value='2'
+                             onChange={(event: SyntheticInputEvent<HTMLInputElement>) =>
+                                 (this.importance = Number(event.target.value))}
+                      />
+                      <label className='form-check-label'>
+                        Less Important
+                      </label>
+                    </div>
+                    <button
+                        type='button'
+                        className='btn btn-primary'
+                        style={{marginTop: '20px'}}
+                        onClick={() => this.register()}>Register</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+        );
+    }
+
+    async register(){
+        var valid = true;
+        if (this.title == ''){
+            valid = false;
+            Alert.danger('Title required');
+        } else if (this.title.length > 64){
+            valid = false;
+            Alert.danger('Max title characters: 64');
+        }
+        if (this.category.trim() == ''){
+            valid = false;
+            Alert.danger('Category required');
+        }
+        if ((this.importance != 1) && (this.importance != 2)){
+            valid = false;
+            Alert.danger('Importance required');
+        }
+
+        if(valid){
+            if (this.picture.trim() == '') this.picture = 'https://tinyurl.com/y73nxqn9';
+            articleService.createArticle(this.title.trim(), this.content.trim(), this.picture.trim(), this.category, this.importance)
+                .then(history.replace('/'), window.location.reload())
+                .catch((error: Error) => Alert.danger(error.message));
+        }
+    }
+
+    mounted(){
+        articleService.getCategories()
+            .then((categories => (this.categories = categories)))
+            .catch((error: Error) => console.log(error.message));
+    }
+}
+
 
 const root = document.getElementById('root');
-if (root)
-  ReactDOM.render(
-    <HashRouter>
-      <div>
-        <Alert />
-        <Menu />
-        <Route exact path="/" component={Home} />
-        <Route path="/students" component={StudentList} />
-        <Route exact path="/students/:id" component={StudentDetails} />
-        <Route exact path="/students/:id/edit" component={StudentEdit} />
-      </div>
-    </HashRouter>,
-    root
-  );
+
+function renderRoot(){
+    if (root)
+        ReactDOM.render(
+            <HashRouter>
+              <div id='page'>
+                <Navbar />
+                <Route exact path='/' component={Home} />
+                <Route exact path='/register' component={Register} />
+                <Route exact path='/article/:id' component={ArticleInfo} />
+                <Route exact path='/article/:id/edit' component={ArticleEdit} />
+              </div>
+            </HashRouter>,
+            root
+        );
+}
+
+renderRoot();

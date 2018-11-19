@@ -8,53 +8,53 @@ import { Component } from 'react-simplified';
  * Renders alert messages using Bootstrap classes.
  */
 export class Alert extends Component {
-  alerts: { text: React.Node, type: string }[] = [];
+    alerts: { text: React.Node, type: string }[] = [];
 
-  render() {
-    return (
-      <>
-        {this.alerts.map((alert, i) => (
-          <div key={i} className={'alert alert-' + alert.type} role="alert">
-            {alert.text}
-            <button
-              className="close"
-              onClick={() => {
-                this.alerts.splice(i, 1);
-              }}
-            >
-              &times;
-            </button>
-          </div>
-        ))}
-      </>
-    );
-  }
+    render() {
+        return (
+            <>
+            {this.alerts.map((alert, i) => (
+                <div key={i} className={'alert alert-' + alert.type} role="alert" style={{margin: '1px'}}>
+                    {alert.text}
+                  <button
+                      className="close"
+                      onClick={() => {
+                          this.alerts.splice(i, 1);
+                      }}
+                  >
+                    &times;
+                  </button>
+                </div>
+            ))}
+            </>
+        );
+    }
 
-  static success(text: React.Node) {
-    // To avoid 'Cannot update during an existing state transition' errors, run after current event through setTimeout
-    setTimeout(() => {
-      for (let instance of Alert.instances()) instance.alerts.push({ text: text, type: 'success' });
-    });
-  }
+    static success(text: React.Node) {
+        // To avoid 'Cannot update during an existing state transition' errors, run after current event through setTimeout
+        setTimeout(() => {
+            for (let instance of Alert.instances()) instance.alerts.push({ text: text, type: 'success' });
+        });
+    }
 
-  static info(text: React.Node) {
-    // To avoid 'Cannot update during an existing state transition' errors, run after current event through setTimeout
-    setTimeout(() => {
-      for (let instance of Alert.instances()) instance.alerts.push({ text: text, type: 'info' });
-    });
-  }
+    static info(text: React.Node) {
+        // To avoid 'Cannot update during an existing state transition' errors, run after current event through setTimeout
+        setTimeout(() => {
+            for (let instance of Alert.instances()) instance.alerts.push({ text: text, type: 'info' });
+        });
+    }
 
-  static warning(text: React.Node) {
-    // To avoid 'Cannot update during an existing state transition' errors, run after current event through setTimeout
-    setTimeout(() => {
-      for (let instance of Alert.instances()) instance.alerts.push({ text: text, type: 'warning' });
-    });
-  }
+    static warning(text: React.Node) {
+        // To avoid 'Cannot update during an existing state transition' errors, run after current event through setTimeout
+        setTimeout(() => {
+            for (let instance of Alert.instances()) instance.alerts.push({ text: text, type: 'warning' });
+        });
+    }
 
-  static danger(text: React.Node) {
-    // To avoid 'Cannot update during an existing state transition' errors, run after current event through setTimeout
-    setTimeout(() => {
-      for (let instance of Alert.instances()) instance.alerts.push({ text: text, type: 'danger' });
-    });
-  }
+    static danger(text: React.Node) {
+        // To avoid 'Cannot update during an existing state transition' errors, run after current event through setTimeout
+        setTimeout(() => {
+            for (let instance of Alert.instances()) instance.alerts.push({ text: text, type: 'danger' });
+        });
+    }
 }
