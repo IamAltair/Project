@@ -4,7 +4,7 @@ import express from 'express';
 import path from 'path';
 import reload from 'reload';
 import fs from 'fs';
-import { Students } from './models.js';
+import { Categories, Articles, Students } from './models.js';
 
 type Request = express$Request;
 type Response = express$Response;
@@ -16,43 +16,102 @@ let app = express();
 app.use(express.static(public_path));
 app.use(express.json()); // For parsing application/json
 
+app.get('/categories', (req: Request, res: Response) => {
+    return Categories.findAll().then(categories => res.send(categories));
+});
+
+app.get('/articles', (req: Request, res: Response) => {
+    return Articles.findAll({
+        order: [['id', 'DESC']]
+    })
+        .then(Articles => res.send(Articles));
+});
+
+app.get('/articles/:id', (req: Request, res: Response) => {
+    return Articles.findOne({ where: { id: Number(req.params.id) } })
+        .then(article => (article ? res.send(article) : res.sendStatus(404)));
+});
+
+app.post('/articles', (req: Request, res: Response) => {
+    if((req.body.title.trim() == '') ||
+        (req.body.category.trim() == '') ||
+        ((req.body.importance != 1) && (req.body.importance != 2))
+    ) return res.sendStatus(400);
+
+    return Articles.create({
+        title: req.body.title,
+        content: req.body.content,
+        picture: req.body.picture,
+        category: req.body.category,
+        importance: req.body.importance
+    })
+        .then(count => (count ? res.sendStatus(200) : res.sendStatus(404)));
+});
+
+app.put('/articles', (req: Request, res: Response) => {
+    if (!(req.body instanceof Object)) return res.sendStatus(400);
+
+    return Articles.update(
+        {
+            title: req.body.title,
+            content: req.body.content,
+            icture: req.body.picture,
+            category: req.body.category,
+            importance: req.body.importance
+        },
+        {
+            where: { id: req.body.id }
+        })
+        .then(count => (count ? res.sendStatus(200) : res.sendStatus(404)));
+});
+
+app.delete('/articles/:id', function (req, res) {
+    return Articles.destroy({
+        where: { id: req.params.id }
+    }).then(count => (count ? res.sendStatus(200) : res.sendStatus(404)));
+});
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
 app.get('/students', (req: Request, res: Response) => {
-  return Students.findAll().then(students => res.send(students));
+    return Students.findAll().then(students => res.send(students));
 });
 
 app.get('/students/:id', (req: Request, res: Response) => {
-  return Students.findOne({ where: { id: Number(req.params.id) } }).then(
-    student => (student ? res.send(student) : res.sendStatus(404))
-  );
+    return Students.findOne({ where: { id: Number(req.params.id) } }).then(
+        student => (student ? res.send(student) : res.sendStatus(404))
+    );
 });
 
 app.put('/students', (req: Request, res: Response) => {
-  if (
-    !req.body ||
-    typeof req.body.id != 'number' ||
-    typeof req.body.firstName != 'string' ||
-    typeof req.body.lastName != 'string' ||
-    typeof req.body.email != 'string'
-  )
-    return res.sendStatus(400);
+    if (
+        !req.body ||
+        typeof req.body.id != 'number' ||
+        typeof req.body.firstName != 'string' ||
+        typeof req.body.lastName != 'string' ||
+        typeof req.body.email != 'string'
+    )
+        return res.sendStatus(412);
 
-  return Students.update(
-    { firstName: req.body.firstName, lastName: req.body.lastName, email: req.body.email },
-    { where: { id: req.body.id } }
-  ).then(count => (count ? res.sendStatus(200) : res.sendStatus(404)));
+    return Students.update(
+        { firstName: req.body.firstName, lastName: req.body.lastName, email: req.body.email },
+        { where: { id: req.body.id } }
+    ).then(count => (count ? res.sendStatus(200) : res.sendStatus(404)));
 });
 
 // Hot reload application when not in production environment
 if (process.env.NODE_ENV !== 'production') {
-  let reloadServer = reload(app);
-  fs.watch(public_path, () => reloadServer.reload());
+    let reloadServer = reload(app);
+    fs.watch(public_path, () => reloadServer.reload());
 }
 
 // The listen promise can be used to wait for the web server to start (for instance in your tests)
 export let listen = new Promise<void>((resolve, reject) => {
-  app.listen(3000, error => {
-    if (error) reject(error.message);
-    console.log('Server started');
-    resolve();
-  });
+    app.listen(3000, error => {
+        if (error) reject(error.message);
+        console.log('Server started');
+        resolve();
+    });
 });
