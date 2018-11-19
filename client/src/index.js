@@ -1,11 +1,5 @@
 // @flow
 
-function square(n: number): number {
-    return n * n;
-}
-
-square('2'); // Error! Flow not working??? HUH?????
-
 import ReactDOM from 'react-dom';
 import * as React from 'react';
 import { Component } from 'react-simplified';
@@ -13,8 +7,6 @@ import { HashRouter, Route, NavLink } from 'react-router-dom';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { Alert } from './widgets';
 import { articleService, studentService } from './services';
-
-//import { Register } from './components/register'
 
 // Reload application when not in production environment
 if (process.env.NODE_ENV !== 'production') {
@@ -48,11 +40,11 @@ class Home extends Component {
 class Navbar extends Component {
     render() {
         return(
-            <nav id='navbar' className='navbar navbar-dark bg-primary'>
+            <nav id='navbar' className='navbar navbar-dark bg-dark'>
               <a id='navbar-title' className='navbar-brand' onClick={() => this.toHome()} >Readit</a>
               <form className='form-inline'>
                 <NavLink to='/register'>
-                  <button className='btn btn-dark' type='button'>Make a post</button>
+                  <button className='btn btn-dark' type='button'>Make a post ✎</button>
                 </NavLink>
               </form>
             </nav>
@@ -92,8 +84,8 @@ class Feed extends Component {
                 slidesToShow: 2,
                 slidesToScroll: 1,
                 autoplay: true,
-                speed: 2000,
-                autoplaySpeed: 2000,
+                speed: 400,
+                autoplaySpeed: 5000,
                 arrows: false,
                 pauseOnHover: true
             });
@@ -111,7 +103,7 @@ class MainContent extends Component {
     render() {
         return(
             <div id='main-content-wrapper'>
-              <div id="bar-filter" className="w3-bar w3-black" >
+              <div id="bar-filter" className="w3-bar w3-dark-grey" >
 
                   {this.categories.map(category => (
                       <a
@@ -138,24 +130,6 @@ class MainContent extends Component {
               </div>
             </div>
         );
-    }
-
-    open() {
-        let mainContent = $("#main-content");
-        let sideFilter = $('#side-filter');
-        if(this.filterOpen){
-            mainContent.css('margin-left', '0');
-            mainContent.css('padding-right', '10px')
-            sideFilter.css('width', '0%');
-            sideFilter.css('display', 'none');
-            this.filterOpen = false;
-        }else if(!this.filterOpen){
-            mainContent.css('margin-left', '20%');
-            mainContent.css('padding-right', '18%')
-            sideFilter.css('width', '20%');
-            sideFilter.css('display', 'block');
-            this.filterOpen = true;
-        }
     }
 
     filter(category){
@@ -193,7 +167,7 @@ class Article extends Component<{articleId: number, title: string, date: Date, p
 
                 <Dropdown className='article-options' direction="up" isOpen={this.optionsOpen} toggle={this.toggle}>
                   <DropdownToggle color="info" caret>
-                    Options
+                      ⚙️
                   </DropdownToggle>
                   <DropdownMenu>
                     <NavLink to={'/article/' + this.props.articleId + '/edit'}>
@@ -398,8 +372,8 @@ class Register extends Component {
               <Alert />
               <div id='register-wrapper'>
                 <div id='register-form' className='card'>
-                  <form style={{margin: '10px'}}>
-                    <div style={{textAlign: 'center'}}>
+                  <form style={{margin: '20px'}}>
+                    <div style={{textAlign: 'left'}}>
                       <h5 className='card-title'>Make a post</h5>
                     </div>
                     <div className='form-group'>
@@ -441,7 +415,7 @@ class Register extends Component {
                             </option>
                         ))}
                     </select>
-                    <label style={{marginTop: '20px'}}>Importance</label><br/>
+                    <label style={{marginTop: '20px'}}>Is this post important?</label><br/>
                     <div className='form-check importance'>
                       <input className='form-check-input'
                              type='radio'
@@ -450,7 +424,7 @@ class Register extends Component {
                              onChange={(event: SyntheticInputEvent<HTMLInputElement>) =>
                                  (this.importance = Number(event.target.value))}/>
                       <label className='form-check-label'>
-                        Important
+                        Yes
                       </label>
                     </div>
                     <div className='form-check'>
@@ -462,14 +436,14 @@ class Register extends Component {
                                  (this.importance = Number(event.target.value))}
                       />
                       <label className='form-check-label'>
-                        Less Important
+                        No
                       </label>
                     </div>
                     <button
                         type='button'
-                        className='btn btn-primary'
+                        className='btn btn-dark'
                         style={{marginTop: '20px'}}
-                        onClick={() => this.register()}>Register</button>
+                        onClick={() => this.register()}>Publish</button>
                   </form>
                 </div>
               </div>
