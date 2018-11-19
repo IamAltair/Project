@@ -5,7 +5,3 @@ node_js:
   script:
     - cd server && npm install && npm test
     - cd ../client && npm install && npm test
-
-  addons:
-    hosts:
-    - localhost
