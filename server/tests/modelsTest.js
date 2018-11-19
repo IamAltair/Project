@@ -1,6 +1,7 @@
 // @flow
 
 import { Students, sync } from '../src/models.js';
+//test
 
 beforeAll(async () => {
   await sync;
