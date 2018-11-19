@@ -22,6 +22,7 @@ export let Categories: Class<
     type: Sequelize.STRING
 });
 
+
 export let Articles: Class<
     Model<{ id?: number, title: string, content: string, picture: string, category: string, importance: number}>
     > = sequelize.define('Articles', {
@@ -32,7 +33,6 @@ export let Articles: Class<
     category: Sequelize.STRING,
     importance:Sequelize.INTEGER
 });
-
 export let Students: Class<
     Model<{ id?: number, firstName: string, lastName: string, email: string }>
     > = sequelize.define('Students', {

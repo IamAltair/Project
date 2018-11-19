@@ -50,7 +50,7 @@ ul {
 }
 
 #main-content-wrapper {
-    overflow: auto;
+    overflow: hidden;
     height: 100%;
     width: 100%;
 }
@@ -120,6 +120,15 @@ ul {
     white-space: pre-wrap;
 }
 
+.articleGrid {
+    display: grid;
+    grid-template-columns: 23% 54% 23%;
+}
+
+div.articleGrid > div {
+    grid-column: 2;
+}
+
 .feed-item {
     color: black;
 }
@@ -150,7 +159,7 @@ ul {
 }
 
 .article-body {
-    overflow: auto;
+    overflow: hidden;
 }
 
 .article-title {

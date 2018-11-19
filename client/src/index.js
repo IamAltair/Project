@@ -40,14 +40,18 @@ class Home extends Component {
 class Navbar extends Component {
     render() {
         return(
-            <nav id='navbar' className='navbar navbar-dark bg-dark'>
-              <a id='navbar-title' className='navbar-brand' onClick={() => this.toHome()} >Readit</a>
-              <form className='form-inline'>
-                <NavLink to='/register'>
-                  <button className='btn btn-dark' type='button'>Make a post ✎</button>
-                </NavLink>
-              </form>
-            </nav>
+            <div class = "articleGrid">
+                <div>
+                    <nav id='navbar' className='navbar navbar-dark bg-dark'>
+                      <a id='navbar-title' className='navbar-brand' onClick={() => this.toHome()} >Readit</a>
+                      <form className='form-inline'>
+                        <NavLink to='/register'>
+                          <button className='btn btn-dark' type='button'>Make a post ✎</button>
+                        </NavLink>
+                      </form>
+                    </nav>
+                </div>
+            </div>
         );
     }
 
@@ -62,12 +66,14 @@ class Feed extends Component {
 
     render() {
         return(
+            <div class="articleGrid">
             <div id='feed'>
                 {this.articles.map(article =>
                     <NavLink key={article.id} to={'/article/' + article.id}>
                       <div className='feed-item'>{article.title + ' (' + getDate(article.createdAt) + ')'}</div>
                     </NavLink>
                 )}
+            </div>
             </div>
         );
     }
@@ -85,7 +91,7 @@ class Feed extends Component {
                 slidesToScroll: 1,
                 autoplay: true,
                 speed: 400,
-                autoplaySpeed: 5000,
+                autoplaySpeed: 3000,
                 arrows: false,
                 pauseOnHover: true
             });
@@ -102,6 +108,7 @@ class MainContent extends Component {
 
     render() {
         return(
+            <div class="articleGrid">
             <div id='main-content-wrapper'>
               <div id="bar-filter" className="w3-bar w3-dark-grey" >
 
@@ -128,6 +135,7 @@ class MainContent extends Component {
                       ></Article>
                   ))}
               </div>
+            </div>
             </div>
         );
     }
