@@ -2,3 +2,5 @@ language: node_js
 
 node_js:
   - "node"
+  script:
+    - cd server && npm install && npm test
