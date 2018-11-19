@@ -48,11 +48,11 @@ class Home extends Component {
 class Navbar extends Component {
     render() {
         return(
-            <nav id='navbar' className='navbar navbar-dark bg-dark'>
-              <a id='navbar-title' className='navbar-brand' onClick={() => this.toHome()} >RealFakeNews</a>
+            <nav id='navbar' className='navbar navbar-dark bg-primary'>
+              <a id='navbar-title' className='navbar-brand' onClick={() => this.toHome()} >Readit</a>
               <form className='form-inline'>
                 <NavLink to='/register'>
-                  <button className='btn btn-outline-success' type='button'>Register article</button>
+                  <button className='btn btn-dark' type='button'>Make a post</button>
                 </NavLink>
               </form>
             </nav>
@@ -111,7 +111,7 @@ class MainContent extends Component {
     render() {
         return(
             <div id='main-content-wrapper'>
-              <div id="side-filter" className="w3-sidebar w3-bar-block w3-card" style={{display:'none'}}>
+              <div id="bar-filter" className="w3-bar w3-black" >
 
                   {this.categories.map(category => (
                       <a
@@ -125,15 +125,6 @@ class MainContent extends Component {
                   ))}
               </div>
               <div id='main-content'>
-                <div>
-                  <button
-                      id="open-side-filter"
-                      className="w3-button w3-teal w3-xlarge"
-                      onClick={(e) => this.open()}
-                  >
-                    &#9776;
-                  </button>
-                </div>
                   {this.showing.map(article => (
                       <Article
                           key={article.id}
@@ -202,7 +193,7 @@ class Article extends Component<{articleId: number, title: string, date: Date, p
 
                 <Dropdown className='article-options' direction="up" isOpen={this.optionsOpen} toggle={this.toggle}>
                   <DropdownToggle color="info" caret>
-                    options
+                    Options
                   </DropdownToggle>
                   <DropdownMenu>
                     <NavLink to={'/article/' + this.props.articleId + '/edit'}>
@@ -409,7 +400,7 @@ class Register extends Component {
                 <div id='register-form' className='card'>
                   <form style={{margin: '10px'}}>
                     <div style={{textAlign: 'center'}}>
-                      <h5 className='card-title'>Register new article</h5>
+                      <h5 className='card-title'>Make a post</h5>
                     </div>
                     <div className='form-group'>
                       <label style={{float: 'left'}}>Title</label>
@@ -421,7 +412,7 @@ class Register extends Component {
                       ></input>
                     </div>
                     <div className='form-group'>
-                      <label style={{float: 'left'}}>Picture URL</label>
+                      <label style={{float: 'left'}}>Image link</label>
                       <input
                           type='text'
                           className='form-control'
