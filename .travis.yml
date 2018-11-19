@@ -1,0 +1,11 @@
+language: node_js
+
+node_js:
+  - "node"
+  script:
+    - cd server && npm install && npm test
+    - cd ../client && npm install && npm test
+
+  addons:
+    hosts:
+    - localhost
